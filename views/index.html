@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login page</title>
+    <link rel="stylesheet" href="./css/main.css">
+    <script type="text/javascript" src="./js/main.js"></script>
+</head>
+<body>
+    <a href="/user/join">회원가입</a>
+    <button id = "loginBtn">로그인</button>
+    <a href ="/user/info" >회원 정보 확인</a>
+    <div class ="layerPopup">
+        <div class ="loginPopup">
+            <div id="loginForm">
+                <h1>로그인 페이지</h1>
+                <input type="text" name="userid" id="userid" placeholder='아이디를 입력해주세요.'>
+                <input type="password" name="userpw" id ="userpw" placeholder="비밀번호를 입력해주세요.">
+                <button id ="localLogin" class ="loginSubmit">로그인</button>
+                <button id ="kakaoLogin" class="loginSubmit kakao">카카오 로그인</button>
+                <p class="joinWord">
+                    <span class="joinBtn">회원가입</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
