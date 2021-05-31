@@ -20,5 +20,16 @@ function createToken(userid) {
     return jwt;
 }
 
+
+function createPW(userpw){  //createHmac 두번째 인자값 = any String like salt 암호화필요  
+    const cryptoPassword = crypto.createHmac('sha256',Buffer.from(process.env.salt))
+                            .update('userpw')
+                            .digest('base64')
+                            .replace('==','').replace('=','');                            
+    return cryptoPassword;
+}  
+
 //let token = createToken('asdf');
-module.exports=createToken; 
+module.exports={
+    createToken,createPW,
+} 

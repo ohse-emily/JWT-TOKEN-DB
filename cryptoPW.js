@@ -1,11 +1,16 @@
-const crypto = require('crypto');
+// const crypto = require('crypto');
 
-function createPW(userpw){
-    const cryptoPassword = crypto.createHmac('sha256',Buffer.from(userpw).toString())
-                            .digest('base64')
-                            .replace('==','').replace('=','');                            
+// function createPW(userpw){  //createHmac 두번째 인자값 = any String like salt 암호화필요  
+//     const cryptoPassword = crypto.createHmac('sha256',Buffer.from(process.env.salt))
+//                             .update('userpw')
+//                             .digest('base64')
+//                             .replace('==','').replace('=','');                            
+//     return cryptoPassword;
+// }  
 
-    return cryptoPassword;
-}  
+// module.exports=createPW;
 
-module.exports=createPW;
+
+
+
+//JWT.js 로 합병

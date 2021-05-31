@@ -1,11 +1,12 @@
 const express = require('express');
 const nunjucks = require('nunjucks');
 const bodyParser = require('body-parser');
-const tokenKey = require('./JWT');
-const cryptoPW=require('./cryptoPW')
+const { createToken, createPW } = require('./JWT');
+//const cryptoPW = require('./cryptoPW') JWT로 합병 
 const auth = require('./middleware/auth');
-const mysql = require('mysql') 
-const session=require('express-session');
+const mysql = require('mysql')
+const session = require('express-session');
+const mysql2 = require('mysql2/promise');
 const app = express();
 
 nunjucks.configure('views', {
@@ -16,19 +17,20 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false, }))
 app.use(express.static('public'));
 app.use(session({
-    secret:'aa',
-    resave:true,
-    secure:false,
-    saveUninitialized:false,
+    secret: 'aa',
+    resave: true,
+    secure: false,
+    saveUninitialized: false,
 }))
 
-let connection = mysql.createConnection({
+let mysqlInfo = {
     host: 'localhost',
     user: 'root',
     password: '5353',
     database: 'user0530'
-})
-connection.connect();
+}
+let connection = mysql.createConnection(mysqlInfo)
+let connection2 = mysql2.createConnection(mysqlInfo)
 
 app.get('/', (req, res) => {
     res.render('index.html');
@@ -40,7 +42,7 @@ app.get('/user/join', (req, res) => {
 
 app.post('/user/join_success', (req, res) => {
     let { userid, userpw, username } = req.body;
-    let cryptoUserpw = cryptoPW(userpw);
+    let cryptoUserpw = createPW(userpw);
     //db에 넣기 
     let sql = `insert into user (userid,userpw,username) values ('${userid}', '${cryptoUserpw}','${username}')`;
     connection.query(sql, (error, results) => {
@@ -53,33 +55,33 @@ app.post('/user/join_success', (req, res) => {
     res.redirect('/');
 })
 
-app.post('/auth/local/login', (req, res) => {
+app.post('/auth/local/login', async (req, res) => {
     let { userid, userpw } = req.body;
     let result = {
         result: false,
         msg: '아이디와 비밀번호를 확인해주세요.'
     };
-    
+
     let sql = `select * from user where userid='${userid}'`;
-    connection.query(sql, (error, results) => {
-        if (error || results=='') {
-            console.log(error);
-        } else {
-            let DB_userid = results[0].userid; // db
-            let DB_userpw = results[0].userpw; // db
-            let cryptoUserpw = cryptoPW(userpw); //고객이 입력한pw 암호화
-            if (userid == DB_userid && cryptoUserpw == DB_userpw) {
-                let token = tokenKey(userid);
-                res.cookie('accessToken', token, { httpOnly: true, secure: true, });
-                result = {
-                    result: true,
-                    msg: '로그인 성공'
-                }
-            }
+    let [DB_results] = await (await connection2).execute(sql);
+    // [] 없이 그냥 DB_results 하면 결과값에 [0][0] 두번 줘야함 
+
+    let DB_userid = DB_results[0].userid; // db
+    let DB_userpw = DB_results[0].userpw; // db
+    let cryptoUserpw = createPW(userpw); //고객이 입력한pw 암호화
+
+    if (userid == DB_userid && cryptoUserpw == DB_userpw) {
+        let token = createToken(userid);
+        res.cookie('accessToken', token, { httpOnly: true, secure: true, });
+        result = {
+            result: true,
+            msg: '로그인 성공'
         }
-        req.session.userid = userid;
-        res.json(result)
-    })
+    }
+
+    req.session.userid = userid;
+    res.json(result)
+
 })
 
 app.get('/user/info', auth, (req, res) => {
